@@ -78,7 +78,7 @@ enabled = true
 ## Comments
 [comments]
 enabled = true
-provider = "disqus"
+provider = "gitalk"
 
 [comments.disqusjs]
 shortname = ""
@@ -140,11 +140,11 @@ reactionsEnabled = 1
 emitMetadata = 0
 
 [comments.gitalk]
-owner = ""
-admin = ""
-repo = ""
-clientID = ""
-clientSecret = ""
+owner = "JimWee"
+admin = "JimWee"
+repo = "https://github.com/JimWee/jimwee.github.io"
+clientID = "0a760a1861666360e1b9"
+clientSecret = "e727e23cc8992b8e291e1928d149fbe01d15ec19"
 
 [comments.cusdis]
 host = ""
