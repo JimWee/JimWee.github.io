@@ -141,8 +141,8 @@ emitMetadata = 0
 
 [comments.gitalk]
 owner = "JimWee"
-admin = "JimWee"
-repo = "https://github.com/JimWee/jimwee.github.io"
+admin = ["JimWee"]
+repo = "jimwee.github.io"
 clientID = "0a760a1861666360e1b9"
 clientSecret = "e727e23cc8992b8e291e1928d149fbe01d15ec19"
 
