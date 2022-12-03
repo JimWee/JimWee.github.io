@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>occlusion culling on 魏剑辉</title><link>https://jimwee.github.io/tags/occlusion-culling/</link><description>Recent content in occlusion culling on 魏剑辉</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 06 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jimwee.github.io/tags/occlusion-culling/index.xml" rel="self" type="application/rss+xml"/><item><title>多场景如何正确加载遮挡剔除数据</title><link>https://jimwee.github.io/p/%E5%A4%9A%E5%9C%BA%E6%99%AF%E5%A6%82%E4%BD%95%E6%AD%A3%E7%A1%AE%E5%8A%A0%E8%BD%BD%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4%E6%95%B0%E6%8D%AE/</link><pubDate>Sun, 06 Nov 2022 00:00:00 +0000</pubDate><guid>https://jimwee.github.io/p/%E5%A4%9A%E5%9C%BA%E6%99%AF%E5%A6%82%E4%BD%95%E6%AD%A3%E7%A1%AE%E5%8A%A0%E8%BD%BD%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4%E6%95%B0%E6%8D%AE/</guid><description>&lt;img src="https://jimwee.github.io/p/%E5%A4%9A%E5%9C%BA%E6%99%AF%E5%A6%82%E4%BD%95%E6%AD%A3%E7%A1%AE%E5%8A%A0%E8%BD%BD%E9%81%AE%E6%8C%A1%E5%89%94%E9%99%A4%E6%95%B0%E6%8D%AE/OcclusionFrustumCulling.jpg" alt="Featured image of post 多场景如何正确加载遮挡剔除数据" />&lt;p>项目中遇到一个关于同时加载多个场景时，遮挡剔除数据(occlusion culling data)没有正确加载的问题，在这个分享下解决过程和思路。&lt;/p>
+&lt;p>unity版本 2019.4.34f1&lt;/p>
+&lt;h1 id="问题描述">问题描述&lt;/h1>
+&lt;p>游戏战斗过程中会有个战斗主场景例如&lt;code>BattleScene&lt;/code>，同时在战斗过程中可能会穿插播放几段剧情，这些剧情可能会用到其他场景资源，例如&lt;code>A_CutScene&lt;/code>，&lt;code>B_CutScene&lt;/code>。&lt;/p>
+&lt;p>实际操作过程中存在两种场景加载流程&lt;/p>
+&lt;ol>
+&lt;li>不预加载剧情场景
+&lt;ul>
+&lt;li>进入战斗，使用&lt;code>LoadSceneMode.Single&lt;/code>加载&lt;code>BattleScene&lt;/code>&lt;/li>
+&lt;li>播放剧情A，使用&lt;code>LoadSceneMode.Additve&lt;/code>加载&lt;code>A_CutScene&lt;/code>，关闭&lt;code>BattleScene&lt;/code>里的所有物件。播放完成后卸载&lt;code>A_CutScene&lt;/code>，开启&lt;code>BattleScene&lt;/code>里的所有物件，回到战斗场景&lt;/li>
+&lt;li>播放剧情B，使用&lt;code>LoadSceneMode.Additve&lt;/code>加载&lt;code>B_CutScene&lt;/code>，关闭&lt;code>BattleScene&lt;/code>里的所有物件。播放完成后卸载&lt;code>B_CutScene&lt;/code>，开启&lt;code>BattleScene&lt;/code>里的所有物件，回到战斗场景&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>预加载剧情场景
+&lt;ul>
+&lt;li>进入战斗，使用&lt;code>LoadSceneMode.Single&lt;/code>加载&lt;code>BattleScene&lt;/code>，同时使用&lt;code>LoadSceneMode.Additve&lt;/code>加载&lt;code>A_CutScene&lt;/code>和&lt;code>B_CutScene&lt;/code>，并关闭&lt;code>A_CutScene&lt;/code>和&lt;code>B_CutScene&lt;/code>里所有物件&lt;/li>
+&lt;li>播放剧情A，使用&lt;code>SetActiveScene&lt;/code>让&lt;code>A_CutScene&lt;/code>变为当前激活场景，同时开启&lt;code>A_CutScene&lt;/code>里所有物件，关闭&lt;code>BattleScene&lt;/code>里所有物件。播放完成后卸载&lt;code>A_CutScene&lt;/code>，开启&lt;code>BattleScene&lt;/code>里的所有物件，回到战斗场景&lt;/li>
+&lt;li>播放剧情A，使用&lt;code>SetActiveScene&lt;/code>让&lt;code>B_CutScene&lt;/code>变为当前激活场景，同时开启&lt;code>B_CutScene&lt;/code>里所有物件，关闭&lt;code>BattleScene&lt;/code>里所有物件。播放完成后卸载&lt;code>B_CutScene&lt;/code>，开启&lt;code>BattleScene&lt;/code>里的所有物件，回到战斗场景&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>预加载场景是为了战斗时能流畅的过度到剧情播放，不会因剧情加载卡顿，实际游戏里发现流程1里的每个场景遮挡剔除数据(occlusion culling data)是正确加载的，但流程2里遮挡剔除数据始终都是&lt;code>BattleScene&lt;/code>的，并没有切换。&lt;/p>
+&lt;p>进一步实验发现，如果同时一起加载多个场景，然后使用&lt;code>SetActiveScene&lt;/code>的方式切换当前激活场景，场景的遮挡剔除数据并不会发生切换，始终是第一个加载进来的场景的，但lightmap数据会切换🤪。&lt;/p>
+&lt;h1 id="尝试解决">尝试解决&lt;/h1>
+&lt;ul>
+&lt;li>
+&lt;p>首先查找了&lt;a class="link" href="https://docs.unity3d.com/Manual/occlusion-culling-scene-loading.html" target="_blank" rel="noopener"
+>官方文档&lt;/a>对多场景的遮挡剔除数据加载的说明。&lt;/p>
+&lt;p>大致意思是同时存在多场景要使用遮挡剔除数据的话&lt;/p>
+&lt;ol>
+&lt;li>在bake数据阶段，先打开第一个要加载的场景（默认场景），然后打开其他addtive的场景，然后bake遮挡剔除数据，保存场景&lt;/li>
+&lt;li>游戏运行阶段，先加载第一个场景（默认场景），然后用&lt;code>additve&lt;/code>的方式加载其他场景，其他场景发现遮挡剔除数据和第一个场景是一致的，就不切换遮挡剔除数据了。&lt;/li>
+&lt;/ol>
+&lt;p>这里说明的是一个大场景由多个子场景构成的情况，然而我这边是多个场景相互切换的情况，卒。。。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>查找文档，看有没有动态加载遮挡剔除数据的接口，没有找到。。。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>最终只能翻看源码，找到加载遮挡剔除数据的地方，加载方式是这样的，在加载场景时（&lt;code>LoadScene&lt;/code>的时候），会遍历当前已经加载的场景，然后加载当前激活场景的遮挡剔除数据。但&lt;code>SetActiveScene&lt;/code>并不会触发遮挡剔除数据的重新加载。。。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="解决方法">解决方法&lt;/h1>
+&lt;ol>
+&lt;li>修改源码，暴露切换遮挡剔除数据的接口，但你得有源码&lt;/li>
+&lt;li>基于源码里切换遮挡剔除数据只发生在加载场景时，可以在&lt;code>SetActiveScene&lt;/code>后，加载一个空场景然后立马卸载掉，就能触发遮挡剔除数据切换为当前激活的场景，虽然山寨，但不用改源码😛&lt;/li>
+&lt;/ol>
+&lt;p>各位如果有什么更好的方法，欢迎提出。&lt;/p></description></item></channel></rss>
