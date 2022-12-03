@@ -1,7 +1,7 @@
 ---
-title: 读书
-description: 阅读书籍的记录
-image: reading.jpg
+title: 游戏
+description: 玩过游戏体验记录
+image: game.jpg
 
 # Badge style
 style:
